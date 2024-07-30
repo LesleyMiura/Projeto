@@ -1,0 +1,435 @@
+<html><head><base href="https://websim.local/monitoring/"><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Sistema de Monitoramento de Paineis</title><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet"><script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script><style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2c3e50;
+      --success-color: #2ecc71;
+      --danger-color: #e74c3c;
+      --background-color: #ecf0f1;
+      --card-background: #ffffff;
+      --text-color: #34495e;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    header {
+      background-color: var(--secondary-color);
+      color: white;
+      padding: 8px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.5em;
+      letter-spacing: 1px;
+    }
+
+    .controls {
+      background-color: var(--card-background);
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    #newIpForm {
+      display: flex;
+      gap: 8px;
+      flex-grow: 1;
+      max-width: 500px;
+    }
+
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 6px 10px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .ip-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    .ip-card {
+      background-color: var(--card-background);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ip-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    }
+
+    .ip-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .status-indicator {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 8px;
+      transition: all 0.5s ease;
+      font-weight: 600;
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      font-size: 12px;
+      position: relative;
+    }
+
+    .status-indicator::after {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      border-radius: 50%;
+      background: inherit;
+      filter: blur(5px);
+      opacity: 0.7;
+      z-index: -1;
+    }
+
+    .status-indicator.active {
+      background-color: var(--success-color);
+      box-shadow: 0 0 15px rgba(46, 204, 113, 0.5);
+    }
+
+    .status-indicator.inactive {
+      background-color: var(--danger-color);
+      box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
+    }
+
+    .ping-info {
+      font-size: 0.85em;
+      color: #7f8c8d;
+      margin-bottom: 6px;
+      font-weight: 300;
+    }
+
+    .card-buttons {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .refresh-button, .remove-button {
+      flex: 1;
+      color: white;
+      border: none;
+      padding: 5px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+
+    .refresh-button {
+      background-color: var(--primary-color);
+    }
+
+    .refresh-button:hover {
+      background-color: #2980b9;
+    }
+
+    .remove-button {
+      background-color: var(--danger-color);
+    }
+
+    .remove-button:hover {
+      background-color: #c0392b;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .status-indicator.active, .status-indicator.inactive {
+      animation: pulse 2s infinite;
+    }
+
+    footer {
+      background-color: var(--secondary-color);
+      color: white;
+      text-align: center;
+      padding: 6px 0;
+      font-size: 10px;
+    }
+
+    footer a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: #2980b9;
+    }
+
+    /* Scrollbar styles */
+    .ip-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .ip-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    .ip-list::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 3px;
+    }
+
+    .ip-list::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+  </style></head><body>
+  <header>
+    <h1>Sistema de Monitoramento de Paineis</h1>
+  </header>
+  <div class="container">
+    <div class="controls">
+      <form id="newIpForm">
+        <input type="text" id="newIpInput" placeholder="Digite um novo IP" required>
+        <button type="submit">Adicionar IP</button>
+      </form>
+      <button id="refreshAll">Atualizar Todos</button>
+    </div>
+    <div class="ip-list" id="ipList">
+      <!-- IPs serão adicionados aqui dinamicamente -->
+    </div>
+  </div>
+
+  <footer>
+    <p>Desenvolvido por <a href="https://www.linkedin.com/in/lesley-miura-0b758a248/">Lesley Miura</a> e <a href="https://www.linkedin.com/in/paulo-g-werneck-4199b9256/">Paulo Galino Werneck</a> | &copy; 2024 Todos os direitos reservados</p>
+  </footer>
+
+  <script>
+    const ipList = document.getElementById('ipList');
+    const newIpForm = document.getElementById('newIpForm');
+    const newIpInput = document.getElementById('newIpInput');
+    const refreshAllButton = document.getElementById('refreshAll');
+
+    function createIpCard(ip) {
+      const card = document.createElement('div');
+      card.className = 'ip-card';
+      card.innerHTML = `
+        <div class="status-indicator">${ip}</div>
+        <div class="ping-info">Ping: --</div>
+        <div class="card-buttons">
+          <button class="refresh-button">Atualizar</button>
+          <button class="remove-button">Remover</button>
+        </div>
+      `;
+      
+      const refreshButton = card.querySelector('.refresh-button');
+      refreshButton.addEventListener('click', () => pingIp(ip));
+      
+      const removeButton = card.querySelector('.remove-button');
+      removeButton.addEventListener('click', () => removeIp(ip));
+      
+      return card;
+    }
+
+    async function pingIp(ip) {
+      const card = ipList.querySelector(`[data-ip="${ip}"]`);
+      if (!card) return;
+
+      const statusIndicator = card.querySelector('.status-indicator');
+      const pingInfoElement = card.querySelector('.ping-info');
+
+      gsap.to(statusIndicator, {duration: 0.5, opacity: 0.5, scale: 0.95, ease: "power2.out"});
+      pingInfoElement.textContent = 'Verificando...';
+
+      try {
+        const response = await fetch('http://localhost:3000/ping', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ ip })
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro ao verificar');
+        }
+
+        const data = await response.json();
+
+        if (data.alive) {
+          gsap.to(statusIndicator, {
+            duration: 0.5, 
+            className: "status-indicator active", 
+            opacity: 1, 
+            scale: 1, 
+            ease: "elastic.out(1, 0.3)"
+          });
+          pingInfoElement.textContent = `Ping: ${data.time} ms`;
+        } else {
+          gsap.to(statusIndicator, {
+            duration: 0.5, 
+            className: "status-indicator inactive", 
+            opacity: 1, 
+            scale: 1, 
+            ease: "elastic.out(1, 0.3)"
+          });
+          pingInfoElement.textContent = 'Ping: Falhou';
+        }
+      } catch (error) {
+        gsap.to(statusIndicator, {
+          duration: 0.5, 
+          className: "status-indicator inactive", 
+          opacity: 1, 
+          scale: 1, 
+          ease: "elastic.out(1, 0.3)"
+        });
+        pingInfoElement.textContent = 'Erro ao verificar';
+      }
+    }
+
+    function removeIp(ip) {
+      const card = ipList.querySelector(`[data-ip="${ip}"]`);
+      if (card) {
+        gsap.to(card, {
+          duration: 0.5, 
+          opacity: 0, 
+          y: -50, 
+          ease: "power2.in",
+          onComplete: () => card.remove()
+        });
+      }
+    }
+
+    newIpForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const ip = newIpInput.value.trim();
+      if (ip && !ipList.querySelector(`[data-ip="${ip}"]`)) {
+        const card = createIpCard(ip);
+        card.setAttribute('data-ip', ip);
+        card.style.opacity = 0;
+        card.style.transform = 'translateY(50px)';
+        ipList.appendChild(card);
+        gsap.to(card, {duration: 0.5, opacity: 1, y: 0, ease: "power2.out"});
+        pingIp(ip);
+        newIpInput.value = '';
+      }
+    });
+
+    refreshAllButton.addEventListener('click', () => {
+      const allCards = ipList.querySelectorAll('.ip-card');
+      allCards.forEach(card => {
+        const ip = card.getAttribute('data-ip');
+        pingIp(ip);
+      });
+    });
+
+    const initialIps = [
+  '172.16.28.16', '172.16.28.46', '172.16.28.82', '172.16.28.33', 
+  '172.16.2.169', '172.16.10.155', '172.16.10.192', '172.16.10.51', 
+  '172.16.4.163', '172.16.4.70', '172.16.4.31', '172.16.12.57', 
+  '172.16.12.121', '172.16.3.44', '172.16.2.54', '172.16.2.113', 
+  '172.16.10.151', '172.16.10.165', '172.16.18.27', '172.16.18.16'
+];
+
+    initialIps.forEach((ip, index) => {
+      const card = createIpCard(ip);
+      card.setAttribute('data-ip', ip);
+      card.style.opacity = 0;
+      card.style.transform = 'translateY(50px)';
+      ipList.appendChild(card);
+      gsap.to(card, {
+        duration: 0.5, 
+        opacity: 1, 
+        y: 0, 
+        ease: "power2.out",
+        delay: index * 0.02
+      });
+      pingIp(ip);
+    });
+
+    function startPeriodicUpdate() {
+      setInterval(() => {
+        const allCards = ipList.querySelectorAll('.ip-card');
+        allCards.forEach(card => {
+          const ip = card.getAttribute('data-ip');
+          pingIp(ip);
+        });
+      }, 30000);
+    }
+
+    startPeriodicUpdate();
+  </script>
+</body></html>
